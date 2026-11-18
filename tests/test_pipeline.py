@@ -69,9 +69,9 @@ def test_lora_training_overfits_tiny_set(tiny_model_dir, tmp_path):
         (prompts.finetune("my card has not arrived yet"), "card arrival"),
         (prompts.finetune("i want to change pin"), "change pin"),
     ] * 8
-    cfg = finetune.FTConfig(rank=4, lr=2e-2, epochs=40, batch_size=4, warmup_frac=0.0)
+    cfg = finetune.FTConfig(rank=8, lr=5e-3, epochs=60, batch_size=4, warmup_frac=0.0, dropout=0.0, bf16=False)
     meta = finetune.train(tiny_model_dir, items, str(tmp_path / "run"), cfg, log_every=5)
     assert meta["loss_log"][-1]["loss"] < meta["loss_log"][0]["loss"]
     tok, model = llm.load(tiny_model_dir, adapter=str(tmp_path / "run" / "adapter"))
-    preds = llm.classify(tok, model, [m for m, _ in items[:2]], LABELS)
+    preds = llm.classify(tok, model, [m for m, _ in items[:2]], LABELS, bf16=False)
     assert [p.label for p in preds] == ["card arrival", "change pin"]
