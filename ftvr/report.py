@@ -12,7 +12,12 @@ PRICE_PER_HOUR = 0.18  # USD, one 4-vCPU on-demand cloud instance (about the lis
 
 
 def _load(res: Path) -> dict[str, dict]:
-    return {p.stem: json.loads(p.read_text()) for p in sorted((res / "metrics").glob("*.json"))}
+    M = {p.stem: json.loads(p.read_text()) for p in sorted((res / "metrics").glob("*.json"))}
+    for name, m in M.items():  # attach training metadata for adapters evaluated by `newintent`
+        meta = Path("runs") / name.removeprefix("newintent-").removesuffix("-test") / "train_meta.json"
+        if name.startswith("newintent-") and "train" not in m and meta.exists():
+            m["train"] = {k: v for k, v in json.loads(meta.read_text()).items() if k != "loss_log"}
+    return M
 
 
 def _preds(res: Path, name: str):
@@ -43,6 +48,11 @@ MAIN = [
     ("rag-k10-all-test", "Qwen2.5-0.5B + 10 retrieved labelled examples", "RAG (retrieval-augmented ICL)"),
     ("lora-r16-test", "Qwen2.5-0.5B LoRA r=16, all linear layers", "fine-tuning"),
     ("qlora-r16-test", "Qwen2.5-0.5B QLoRA r=16 (NF4 4-bit base)", "fine-tuning"),
+    (
+        "newintent-raft-r16-drop10-test",
+        "Qwen2.5-0.5B RAFT: LoRA trained *with* 5 retrieved examples in the prompt (30 ex/intent, 67 intents only)",
+        "fine-tuning + RAG",
+    ),
 ]
 
 
@@ -102,6 +112,8 @@ def build(res: Path) -> str:
         ("lora-r16-test", f"rag-k{K}-all-test"),
         (f"rag-k{K}-all-test", "minilm-knn10-test"),
         ("qlora-r16-test", "lora-r16-test"),
+        ("newintent-raft-r16-drop10-test", "minilm-lr-test"),
+        ("newintent-raft-r16-drop10-test", "lora-r16-test"),
     ]
     sig = []
     for a, b in pairs:

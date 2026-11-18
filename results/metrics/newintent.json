@@ -1,0 +1,67 @@
+{
+  "held_out_intents": [
+    "card about to expire",
+    "card payment not recognised",
+    "card swallowed",
+    "contactless not working",
+    "declined transfer",
+    "direct debit payment not recognised",
+    "disposable card limits",
+    "exchange via app",
+    "get disposable virtual card",
+    "why verify identity"
+  ],
+  "n_test_new": 400,
+  "n_test_seen": 2680,
+  "rows": [
+    {
+      "approach": "zero-shot prompt (77 intents listed)",
+      "acc_new_intents": 0.245,
+      "acc_seen_intents": 0.26865671641791045,
+      "acc_all": 0.2655844155844156,
+      "retraining": "none (edit the label list)"
+    },
+    {
+      "approach": "MiniLM kNN vote, full index",
+      "acc_new_intents": 0.8475,
+      "acc_seen_intents": 0.9238805970149254,
+      "acc_all": 0.913961038961039,
+      "retraining": "none (index updated)"
+    },
+    {
+      "approach": "retrieval-augmented few-shot, full index",
+      "acc_new_intents": 0.8025,
+      "acc_seen_intents": 0.8854477611940299,
+      "acc_all": 0.8746753246753247,
+      "retraining": "none (index updated)"
+    },
+    {
+      "approach": "LoRA retrained on all 77 intents (upper bound)",
+      "acc_new_intents": 0.885,
+      "acc_seen_intents": 0.9160447761194029,
+      "acc_all": 0.912012987012987,
+      "retraining": "required"
+    },
+    {
+      "approach": "MiniLM + logistic regression retrained on all 77",
+      "acc_new_intents": 0.885,
+      "acc_seen_intents": 0.9354477611940298,
+      "acc_all": 0.9288961038961039,
+      "retraining": "required (seconds)"
+    },
+    {
+      "approach": "lora-r16-drop10",
+      "acc_new_intents": 0.0075,
+      "acc_seen_intents": 0.9164179104477612,
+      "acc_all": 0.7983766233766234,
+      "retraining": "required (labels live in the weights)"
+    },
+    {
+      "approach": "raft-r16-drop10",
+      "acc_new_intents": 0.88,
+      "acc_seen_intents": 0.9432835820895522,
+      "acc_all": 0.935064935064935,
+      "retraining": "none (index updated with new examples)"
+    }
+  ]
+}

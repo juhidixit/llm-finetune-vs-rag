@@ -1,0 +1,34 @@
+{
+  "n": 3080,
+  "accuracy": 0.7983766233766234,
+  "accuracy_ci95": [
+    0.7831168831168831,
+    0.8133116883116883
+  ],
+  "macro_f1": 0.7536469868771589,
+  "invalid_rate": 0.0,
+  "ece": 0.09456237555275876,
+  "acc_at_80pct_coverage": 0.9103084415584416,
+  "throughput_ms_per_example": 120.91119853506497,
+  "prompt_tokens_mean": 34.60032467532468,
+  "method": "lora-r16-drop10",
+  "held_out_intents": [
+    "card about to expire",
+    "card payment not recognised",
+    "card swallowed",
+    "contactless not working",
+    "declined transfer",
+    "direct debit payment not recognised",
+    "disposable card limits",
+    "exchange via app",
+    "get disposable virtual card",
+    "why verify identity"
+  ],
+  "name": "newintent-lora-r16-drop10-test",
+  "env": {
+    "python": "3.13.18",
+    "torch": "2.15.0+cu132",
+    "cpu": "x86_64",
+    "threads": 4
+  }
+}

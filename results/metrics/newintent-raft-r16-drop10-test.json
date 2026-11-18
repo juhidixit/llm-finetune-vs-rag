@@ -1,0 +1,34 @@
+{
+  "n": 3080,
+  "accuracy": 0.935064935064935,
+  "accuracy_ci95": [
+    0.9262987012987013,
+    0.9435064935064935
+  ],
+  "macro_f1": 0.9349799289861851,
+  "invalid_rate": 0.0,
+  "ece": 0.047314406912048135,
+  "acc_at_80pct_coverage": 0.9862012987012987,
+  "throughput_ms_per_example": 294.0452188574678,
+  "prompt_tokens_mean": 174.98376623376623,
+  "method": "raft-r16-drop10",
+  "held_out_intents": [
+    "card about to expire",
+    "card payment not recognised",
+    "card swallowed",
+    "contactless not working",
+    "declined transfer",
+    "direct debit payment not recognised",
+    "disposable card limits",
+    "exchange via app",
+    "get disposable virtual card",
+    "why verify identity"
+  ],
+  "name": "newintent-raft-r16-drop10-test",
+  "env": {
+    "python": "3.13.18",
+    "torch": "2.15.0+cu132",
+    "cpu": "x86_64",
+    "threads": 4
+  }
+}

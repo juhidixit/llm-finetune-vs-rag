@@ -12,10 +12,26 @@ validation split (9,000 messages). Accuracy CIs are 95% bootstrap intervals over
 | TF-IDF + logistic regression | classic | **88.8** | 87.8–89.9 | 88.9 | – | – | 0 | 0.01 | – / – | 16.0 s | – |
 | MiniLM embeddings + logistic regression | classic | **92.9** | 91.9–93.8 | 92.9 | – | – | 0 | 4.15 | – / – | 37.1 s | – |
 | MiniLM kNN vote (k=10) | retrieval only | **91.4** | 90.5–92.3 | 91.4 | – | – | 0 | – | – / – | – | – |
+| Qwen2.5-0.5B zero-shot, 77 intents in prompt | prompting | **26.6** | 25.0–28.1 | 23.1 | 36.6 | 31.1 | 467 | 103 | 655 / 782 | – | – |
+| Qwen2.5-0.5B + 5 retrieved labelled examples | RAG (retrieval-augmented ICL) | **87.5** | 86.3–88.6 | 87.5 | 7.6 | 95.4 | 175 | 227 | 670 / 842 | – | – |
+| Qwen2.5-0.5B LoRA r=16, all linear layers | fine-tuning | **91.2** | 90.2–92.2 | 91.2 | 1.1 | 97.8 | 35 | 85 | 487 / 585 | 27 min | 8.8 M (1.75%) |
+| Qwen2.5-0.5B QLoRA r=16 (NF4 4-bit base) | fine-tuning | **90.9** | 89.9–91.9 | 90.9 | 1.0 | 98.1 | 35 | 210 | 597 / 733 | 29 min | 8.8 M (2.72%) |
+| Qwen2.5-0.5B RAFT: LoRA trained *with* 5 retrieved examples in the prompt (30 ex/intent, 67 intents only) | fine-tuning + RAG | **93.5** | 92.6–94.4 | 93.5 | 4.7 | 98.6 | 175 | 294 | – / – | 30 min | 8.8 M (1.75%) |
 
 ECE and coverage use the probability of the emitted label path under constrained decoding
 (classic baselines have no comparable score here, so those cells are blank). "Acc. @80% coverage" is
 accuracy on the 80% most confident messages, i.e. if the 20% least confident went to a human agent.
+
+Paired bootstrap (10,000 resamples of the same test messages); p = share of resamples where A is not better than B:
+
+| A vs B | Accuracy difference | p |
+|---|---|---|
+| lora-r16 vs minilm-lr | -1.69 pp | 1.000 |
+| lora-r16 vs rag-k5-all | 3.73 pp | 0.000 |
+| rag-k5-all vs minilm-knn10 | -3.93 pp | 1.000 |
+| qlora-r16 vs lora-r16 | -0.32 pp | 0.845 |
+| newintent-raft-r16-drop10 vs minilm-lr | 0.62 pp | 0.057 |
+| newintent-raft-r16-drop10 vs lora-r16 | 2.31 pp | 0.000 |
 
 ## 2. Cost per million messages
 
@@ -27,6 +43,11 @@ No GPU was used. Training cost is one run, not including the hyperparameter sear
 |---|---|---|---|---|
 | TF-IDF + logistic regression | 0.00 | $0.00 | 16.0 s | $0.00 |
 | MiniLM embeddings + logistic regression | 1.15 | $0.21 | 37.1 s | $0.00 |
+| Qwen2.5-0.5B zero-shot, 77 intents in prompt | 28.58 | $5.14 | – | $0.00 |
+| Qwen2.5-0.5B + 5 retrieved labelled examples | 62.92 | $11.33 | – | $0.00 |
+| Qwen2.5-0.5B LoRA r=16, all linear layers | 23.59 | $4.25 | 27 min | $0.08 |
+| Qwen2.5-0.5B QLoRA r=16 (NF4 4-bit base) | 58.32 | $10.50 | 29 min | $0.09 |
+| Qwen2.5-0.5B RAFT: LoRA trained *with* 5 retrieved examples in the prompt (30 ex/intent, 67 intents only) | 81.68 | $14.70 | 30 min | $0.09 |
 
 ## 3. RAG ablation: number of retrieved examples (validation split, 1,003 messages; chosen k is used on test)
 
@@ -34,6 +55,33 @@ No GPU was used. Training cost is one run, not including the hyperparameter sear
 |---|---|---|---|---|
 | 5 | 86.7 | 96.5 | 181 | 295 |
 | 10 | 80.2 | 97.9 | 288 | 340 |
+| 20 | 71.4 | 98.5 | 499 | 539 |
+
+## 4. Fine-tuning ablations (test)
+
+Defaults: lr 2e-4, cosine schedule, batch 16, 1 epoch, alpha = 2 x rank, dropout 0.05, loss on answer tokens only.
+
+| Variant | Accuracy | Macro-F1 | Train examples | Trainable params | Adapter size | Train time |
+|---|---|---|---|---|---|---|
+| rank 16 (default) | 91.2 | 91.2 | 9000 | 8.80 M | 35.2 MB | 27 min |
+| rank 16, QLoRA NF4 base | 90.9 | 90.9 | 9000 | 8.80 M | 35.2 MB | 29 min |
+| rank 16, 10 examples per intent (770), 3 epochs | 77.3 | 77.3 | 770 | 8.80 M | 35.2 MB | 10 min |
+
+## 6. New intents after deployment
+
+Ten intents are treated as launched after training: card about to expire, card payment not recognised, card swallowed, contactless not working, declined transfer, direct debit payment not recognised, disposable card limits, exchange via app, get disposable virtual card, why verify identity.
+Rows marked "none" had their example index (or label list) updated with the new intents' training examples but no
+gradient update. Test: 400 messages from new intents, 2680 from the other 67.
+
+| Approach | Acc. new intents | Acc. seen intents | Acc. all | Retraining needed |
+|---|---|---|---|---|
+| zero-shot prompt (77 intents listed) | 24.5 | 26.9 | 26.6 | none (edit the label list) |
+| MiniLM kNN vote, full index | 84.8 | 92.4 | 91.4 | none (index updated) |
+| retrieval-augmented few-shot, full index | 80.2 | 88.5 | 87.5 | none (index updated) |
+| LoRA retrained on all 77 intents (upper bound) | 88.5 | 91.6 | 91.2 | required |
+| MiniLM + logistic regression retrained on all 77 | 88.5 | 93.5 | 92.9 | required (seconds) |
+| lora-r16-drop10 | 0.8 | 91.6 | 79.8 | required (labels live in the weights) |
+| raft-r16-drop10 | 88.0 | 94.3 | 93.5 | none (index updated with new examples) |
 
 ## Environment
 
