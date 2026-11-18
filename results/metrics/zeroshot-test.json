@@ -1,0 +1,29 @@
+{
+  "n": 3080,
+  "accuracy": 0.2655844155844156,
+  "accuracy_ci95": [
+    0.24998376623376622,
+    0.28084415584415584
+  ],
+  "macro_f1": 0.23102535588225626,
+  "invalid_rate": 0.0,
+  "ece": 0.365507438498271,
+  "acc_at_80pct_coverage": 0.31087662337662336,
+  "throughput_ms_per_example": 102.8802096318182,
+  "prompt_tokens_mean": 466.60032467532466,
+  "method": "zero-shot prompting, 77 intents listed in the prompt",
+  "constrained": true,
+  "online_latency": {
+    "p50_ms": 655.2162965000434,
+    "p95_ms": 781.8404364999877,
+    "mean_ms": 625.8238307799979
+  },
+  "online_latency_n": 100,
+  "name": "zeroshot-test",
+  "env": {
+    "python": "3.13.18",
+    "torch": "2.15.0+cu132",
+    "cpu": "x86_64",
+    "threads": 4
+  }
+}

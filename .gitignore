@@ -2,8 +2,8 @@ __pycache__/
 *.pyc
 .venv/
 .cache/
-models/
-data/
+/models
+/data
 runs/*/adapter/
 .pytest_cache/
 .ruff_cache/

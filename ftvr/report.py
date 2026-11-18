@@ -168,6 +168,7 @@ def build(res: Path) -> str:
         ("lora-r4-test", "rank 4"),
         ("lora-r16-test", "rank 16 (default)"),
         ("lora-r64-test", "rank 64"),
+        ("lora-r16-e2-test", "rank 16, 2 epochs"),
         ("lora-r16-attn-test", "rank 16, attention projections only"),
         ("qlora-r16-test", "rank 16, QLoRA NF4 base"),
         ("lora-r16-n10-test", "rank 16, 10 examples per intent (770), 3 epochs"),

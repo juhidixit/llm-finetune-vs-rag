@@ -1,0 +1,32 @@
+{
+  "n": 3080,
+  "accuracy": 0.8746753246753247,
+  "accuracy_ci95": [
+    0.8629788961038961,
+    0.8857142857142857
+  ],
+  "macro_f1": 0.8746061374566392,
+  "invalid_rate": 0.0,
+  "ece": 0.0756065250604183,
+  "acc_at_80pct_coverage": 0.9541396103896104,
+  "throughput_ms_per_example": 226.50100316883098,
+  "prompt_tokens_mean": 174.98376623376623,
+  "method": "retrieval-augmented few-shot (MiniLM top-5 labelled examples)",
+  "k": 5,
+  "constrain_to": "all",
+  "candidates_in_prompt": true,
+  "label_recall_at_k": 0.9691558441558441,
+  "online_latency": {
+    "p50_ms": 669.5659265000131,
+    "p95_ms": 842.389877700077,
+    "mean_ms": 690.8174959800068
+  },
+  "online_latency_n": 100,
+  "name": "rag-k5-all-test",
+  "env": {
+    "python": "3.13.18",
+    "torch": "2.15.0+cu132",
+    "cpu": "x86_64",
+    "threads": 4
+  }
+}

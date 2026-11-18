@@ -20,7 +20,7 @@ trained qlora-r16 || $R train --name qlora-r16 --rank 16 --quant4
 done_ qlora-r16-test || $R eval-ft --name qlora-r16 --latency
 # new-intent (drift) experiment
 trained lora-r16-drop10 || $R train --name lora-r16-drop10 --rank 16 --drop-intents
-trained raft-r16-drop10 || $R train --name raft-r16-drop10 --rank 16 --drop-intents --raft --k $K --per-label 30
+trained raft-r16-drop10 || $R train --name raft-r16-drop10 --rank 16 --drop-intents --raft --k $K --per-label 30 --batch-size 4
 [ -f results/metrics/newintent.json ] || $R newintent --k $K --adapters lora-r16-drop10 raft-r16-drop10
 # ablations
 for n in 10 30; do
@@ -31,6 +31,8 @@ for r in 4 64; do
   trained lora-r$r || $R train --name lora-r$r --rank $r
   done_ lora-r$r-test || $R eval-ft --name lora-r$r
 done
+trained lora-r16-e2 || $R train --name lora-r16-e2 --rank 16 --epochs 2
+done_ lora-r16-e2-test || $R eval-ft --name lora-r16-e2
 trained lora-r16-attn || $R train --name lora-r16-attn --rank 16 --targets attn
 done_ lora-r16-attn-test || $R eval-ft --name lora-r16-attn
 done_ zeroshot-free-test || $R zeroshot --free

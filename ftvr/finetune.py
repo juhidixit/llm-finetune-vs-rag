@@ -82,6 +82,7 @@ def train(
     out_dir: str,
     cfg: FTConfig,
     log_every: int = 10,
+    ckpt_every: int = 50,
 ) -> dict:
     torch.manual_seed(cfg.seed)
     rng = random.Random(cfg.seed)
@@ -117,11 +118,27 @@ def train(
     log, step, t0 = [], 0, time.perf_counter()
     out = Path(out_dir)
     out.mkdir(parents=True, exist_ok=True)
+    ckpt = out / "checkpoint.pt"
+    resume_step, prior_s = 0, 0.0
+    if ckpt.exists():  # resume after an interrupted run (preemptible / restarted machines)
+        from peft import set_peft_model_state_dict
+
+        st = torch.load(ckpt, weights_only=False)
+        set_peft_model_state_dict(model, st["lora"])
+        opt.load_state_dict(st["opt"])
+        sched.load_state_dict(st["sched"])
+        resume_step, log, prior_s = st["step"], st["log"], st["elapsed_s"]
+        torch.set_rng_state(st["torch_rng"])
+        print(f"resuming from step {resume_step}", flush=True)
+    t0 -= prior_s
     while step < total_steps:
-        for b in _batches(lengths, cfg.batch_size, rng):
+        for b in _batches(lengths, cfg.batch_size, rng):  # same seed -> same batch order on resume
             if step >= total_steps:
                 break
-            L = max(lengths[i] for i in b)
+            if step < resume_step:
+                step += 1
+                continue
+            L = -(-max(lengths[i] for i in b) // 32) * 32  # bucket shapes: bounds oneDNN kernel-cache growth on CPU
             ids = torch.full((len(b), L), pad, dtype=torch.long)
             lab = torch.full((len(b), L), -100, dtype=torch.long)
             att = torch.zeros((len(b), L), dtype=torch.long)
@@ -142,6 +159,22 @@ def train(
                 rec = {"step": step, "loss": float(loss.detach()), "lr": sched.get_last_lr()[0], "elapsed_s": time.perf_counter() - t0}
                 log.append(rec)
                 print(json.dumps(rec), flush=True)
+            if step % ckpt_every == 0 and step < total_steps:
+                from peft import get_peft_model_state_dict
+
+                torch.save(
+                    {
+                        "lora": get_peft_model_state_dict(model),
+                        "opt": opt.state_dict(),
+                        "sched": sched.state_dict(),
+                        "step": step,
+                        "log": log,
+                        "elapsed_s": time.perf_counter() - t0,
+                        "torch_rng": torch.get_rng_state(),
+                    },
+                    ckpt.with_suffix(".tmp"),
+                )
+                ckpt.with_suffix(".tmp").replace(ckpt)
     train_s = time.perf_counter() - t0
     model.save_pretrained(str(out / "adapter"))
     size = sum(f.stat().st_size for f in (out / "adapter").glob("*"))
@@ -159,6 +192,7 @@ def train(
         "loss_log": log,
     }
     (out / "train_meta.json").write_text(json.dumps(meta, indent=2))
+    ckpt.unlink(missing_ok=True)
     return meta
 
 
