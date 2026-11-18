@@ -1,0 +1,49 @@
+{
+  "n": 3080,
+  "accuracy": 0.9256493506493506,
+  "accuracy_ci95": [
+    0.9162256493506494,
+    0.9353977272727273
+  ],
+  "macro_f1": 0.9256541048620407,
+  "invalid_rate": 0.0,
+  "ece": 0.00815366520364946,
+  "acc_at_80pct_coverage": 0.9821428571428571,
+  "throughput_ms_per_example": 112.51975804091069,
+  "prompt_tokens_mean": 34.60032467532468,
+  "method": "LoRA fine-tune (lora-r64)",
+  "train": {
+    "config": {
+      "rank": 64,
+      "alpha": null,
+      "dropout": 0.05,
+      "targets": "all-linear",
+      "lr": 0.0002,
+      "epochs": 1.0,
+      "batch_size": 16,
+      "warmup_frac": 0.05,
+      "weight_decay": 0.0,
+      "quant4": false,
+      "seed": 13,
+      "max_len": 512,
+      "bf16": true
+    },
+    "n_train": 9000,
+    "steps": 563,
+    "train_seconds": 2444.691755353001,
+    "seconds_per_step": 4.3422588905026664,
+    "trainable_params": 35192832,
+    "total_params": 529225600,
+    "trainable_pct": 6.649873324344099,
+    "adapter_bytes": 140822347,
+    "torch_threads": 4
+  },
+  "constrained": true,
+  "name": "lora-r64-test",
+  "env": {
+    "python": "3.13.18",
+    "torch": "2.15.0+cu132",
+    "cpu": "x86_64",
+    "threads": 4
+  }
+}

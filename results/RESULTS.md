@@ -63,9 +63,24 @@ Defaults: lr 2e-4, cosine schedule, batch 16, 1 epoch, alpha = 2 x rank, dropout
 
 | Variant | Accuracy | Macro-F1 | Train examples | Trainable params | Adapter size | Train time |
 |---|---|---|---|---|---|---|
+| rank 4 | 88.9 | 88.9 | 9000 | 2.20 M | 8.8 MB | 37 min |
 | rank 16 (default) | 91.2 | 91.2 | 9000 | 8.80 M | 35.2 MB | 27 min |
+| rank 64 | 92.6 | 92.6 | 9000 | 35.19 M | 140.8 MB | 41 min |
+| rank 16, 2 epochs | 93.0 | 93.0 | 9000 | 8.80 M | 35.2 MB | 78 min |
+| rank 16, attention projections only | 84.7 | 84.5 | 9000 | 2.16 M | 8.7 MB | 22 min |
 | rank 16, QLoRA NF4 base | 90.9 | 90.9 | 9000 | 8.80 M | 35.2 MB | 29 min |
 | rank 16, 10 examples per intent (770), 3 epochs | 77.3 | 77.3 | 770 | 8.80 M | 35.2 MB | 10 min |
+| rank 16, 30 examples per intent (2,310), 3 epochs | 88.7 | 88.7 | 2310 | 8.80 M | 35.2 MB | 30 min |
+
+## 5. Constrained vs free decoding (test)
+
+Free decoding counts an output as correct only if it exactly matches an intent name after lower-casing.
+
+| Method | Constrained acc. | Free acc. | Free: invalid outputs |
+|---|---|---|---|
+| zero-shot | 26.6 | 20.7 | 27.3 |
+| RAG k=5 | 87.5 | 82.0 | 6.7 |
+| LoRA r=16 | 91.2 | 91.1 | 0.3 |
 
 ## 6. New intents after deployment
 
@@ -78,11 +93,13 @@ gradient update. Test: 400 messages from new intents, 2680 from the other 67.
 | zero-shot prompt (77 intents listed) | 24.5 | 26.9 | 26.6 | none (edit the label list) |
 | MiniLM kNN vote, full index | 84.8 | 92.4 | 91.4 | none (index updated) |
 | retrieval-augmented few-shot, full index | 80.2 | 88.5 | 87.5 | none (index updated) |
-| LoRA retrained on all 77 intents (upper bound) | 88.5 | 91.6 | 91.2 | required |
+| LoRA trained on all 77 intents (reference) | 88.5 | 91.6 | 91.2 | required |
 | MiniLM + logistic regression retrained on all 77 | 88.5 | 93.5 | 92.9 | required (seconds) |
-| lora-r16-drop10 | 0.8 | 91.6 | 79.8 | required (labels live in the weights) |
-| raft-r16-drop10 | 88.0 | 94.3 | 93.5 | none (index updated with new examples) |
+| LoRA trained on the 67 known intents only | 0.8 | 91.6 | 79.8 | required (labels live in the weights) |
+| RAFT-style LoRA trained on the 67 known intents (30 each), new intents' examples added to the index | 88.0 | 94.3 | 93.5 | none (index updated with new examples) |
 
 ## Environment
+
+Intel Xeon with AMX bf16, 4 vCPUs, 15 GB RAM, shared cloud VM; wall-clock times vary by roughly 30% between runs.
 
 - `{"cpu": "x86_64", "python": "3.13.18", "threads": 4, "torch": "2.15.0+cu132"}`

@@ -1,0 +1,49 @@
+{
+  "n": 3080,
+  "accuracy": 0.8470779220779221,
+  "accuracy_ci95": [
+    0.8344155844155844,
+    0.8597402597402597
+  ],
+  "macro_f1": 0.8447924293010418,
+  "invalid_rate": 0.0,
+  "ece": 0.033753831667656255,
+  "acc_at_80pct_coverage": 0.9391233766233766,
+  "throughput_ms_per_example": 98.75150829091156,
+  "prompt_tokens_mean": 34.60032467532468,
+  "method": "LoRA fine-tune (lora-r16-attn)",
+  "train": {
+    "config": {
+      "rank": 16,
+      "alpha": null,
+      "dropout": 0.05,
+      "targets": "attn",
+      "lr": 0.0002,
+      "epochs": 1.0,
+      "batch_size": 16,
+      "warmup_frac": 0.05,
+      "weight_decay": 0.0,
+      "quant4": false,
+      "seed": 13,
+      "max_len": 512,
+      "bf16": true
+    },
+    "n_train": 9000,
+    "steps": 563,
+    "train_seconds": 1334.262152807998,
+    "seconds_per_step": 2.3699150138685576,
+    "trainable_params": 2162688,
+    "total_params": 496195456,
+    "trainable_pct": 0.43585405183557346,
+    "adapter_bytes": 8682353,
+    "torch_threads": 4
+  },
+  "constrained": true,
+  "name": "lora-r16-attn-test",
+  "env": {
+    "python": "3.13.18",
+    "torch": "2.15.0+cu132",
+    "cpu": "x86_64",
+    "threads": 4
+  }
+}

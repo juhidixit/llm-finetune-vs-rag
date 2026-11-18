@@ -1,0 +1,23 @@
+{
+  "n": 3080,
+  "accuracy": 0.20714285714285716,
+  "accuracy_ci95": [
+    0.19318181818181818,
+    0.2211038961038961
+  ],
+  "macro_f1": 0.1951028009279125,
+  "invalid_rate": 0.2733766233766234,
+  "ece": 0.2987353599854055,
+  "acc_at_80pct_coverage": 0.24512987012987014,
+  "throughput_ms_per_example": 122.68080269285122,
+  "prompt_tokens_mean": 466.60032467532466,
+  "method": "zero-shot prompting, 77 intents listed in the prompt",
+  "constrained": false,
+  "name": "zeroshot-free-test",
+  "env": {
+    "python": "3.13.18",
+    "torch": "2.15.0+cu132",
+    "cpu": "x86_64",
+    "threads": 4
+  }
+}

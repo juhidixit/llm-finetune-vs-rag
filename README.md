@@ -10,7 +10,7 @@ the things that decide a real deployment: calibration, latency, serving cost, tr
 and what happens when the business launches new intents after the model shipped.
 
 Model: **Qwen2.5-0.5B-Instruct** (Apache-2.0). Hardware: **one 4-vCPU Intel Xeon, no GPU** (bf16 via AMX).
-Everything, including fine-tuning, runs on that machine in about ten hours end to end.
+Everything, including fine-tuning, runs on that machine; the full suite of 10 training runs and all evaluations takes about 12 hours.
 
 ## Headline results (Banking77 official test split, 3,080 messages)
 
@@ -18,7 +18,7 @@ Everything, including fine-tuning, runs on that machine in about ten hours end t
 |---|---|---|---|---|
 | Zero-shot prompt with all 77 intents listed | 26.6% | 36.6% | $5.14 | yes, but it is wrong 3 times out of 4 |
 | RAG: 5 retrieved labelled examples in the prompt | 87.5% | 7.6% | $11.33 | yes (80.2% on new intents) |
-| LoRA fine-tune (r=16, 9k examples, 27 min on CPU) | 91.2% | **1.1%** | $4.25 | **no (0.7% on new intents)** |
+| LoRA fine-tune (r=16, 9k examples, 27 min on CPU) | 91.2% | **1.1%** | $4.25 | **no (0.8% on new intents)** |
 | QLoRA fine-tune (NF4 4-bit base) | 90.9% | 1.0% | $10.50 | no |
 | MiniLM embeddings + logistic regression (37 s) | 92.9% | – | **$0.21** | no, but retrains in seconds |
 | **RAFT-style: LoRA trained with retrieved examples in the prompt** | **93.5%** | 4.7% | $14.70 | **yes (88.0% on new intents)** |
@@ -29,8 +29,9 @@ for latency, confidence intervals, paired significance tests and every ablation.
 ### What the numbers say
 
 1. **Start with the boring baseline.** With 9,000 labelled examples, sentence embeddings + logistic regression
-   (92.9%) beat LoRA on a 0.5B LLM (91.2%; −1.7 pp, paired bootstrap p < 0.001) at about 1/20 of the serving cost.
-   The LLM has to earn its place.
+   (92.9%, 37 s to train) beat the default LoRA run (91.2%; −1.7 pp, paired bootstrap p < 0.001) at about 1/20 of
+   the serving cost. Tuning LoRA closes the gap but does not open a new one: rank 64 reaches 92.6% and two epochs
+   reach 93.0%. The LLM has to earn its place with something other than accuracy.
 2. **Zero-shot does not work at this granularity** for a small model: 26.6%. Intents such as
    `pending transfer` vs `transfer not received by recipient` need examples, not instructions.
 3. **For a small model, more retrieved examples hurt.** On the validation split, accuracy fell from 86.7% (k=5)
@@ -43,10 +44,17 @@ for latency, confidence intervals, paired significance tests and every ablation.
    there are no fast 4-bit kernels there. QLoRA saves memory; it does not save time unless the hardware has
    4-bit kernels.
 6. **Plain fine-tuning breaks when the label set changes.** Ten intents were hidden from training and "launched"
-   afterwards. The plain LoRA model got 0.7% of them right. A LoRA model trained to *read retrieved examples*
+   afterwards. The plain LoRA model got 0.8% of them right. A LoRA model trained to *read retrieved examples*
    (RAFT-style, only 30 examples for each of the 67 known intents) got **88.0%** of the new intents right with no
    retraining, just by adding their examples to the index, and was the most accurate system overall (93.5%,
-   +2.3 pp over plain LoRA, p < 0.001; +0.6 pp over embeddings + LR, p = 0.057, not significant).
+   +2.3 pp over plain LoRA, p < 0.001; +0.6 pp over embeddings + LR, p = 0.057, not significant). With the same
+   30 examples per intent, plain LoRA reached 88.7%, so most of the gain comes from training the model to use
+   retrieved evidence.
+7. **Rank and placement matter more than quantisation.** Attention-only LoRA lost 6.5 pp against all linear layers
+   (84.7% vs 91.2%); rank 4 / 16 / 64 gave 88.9% / 91.2% / 92.6%. With 10 examples per intent LoRA got 77.3%.
+8. **Constrained decoding is free accuracy for prompted models**: free-form generation produced invalid labels
+   27.3% of the time zero-shot and 6.7% with RAG (accuracy −5.9 and −5.5 pp); the fine-tuned model barely needs it
+   (0.3% invalid).
 
 **Decision guide derived from these runs:** if labels are stable and you have thousands of examples, ship
 the embedding classifier first. If you need calibrated confidences for human handoff, fine-tune. If the label
@@ -85,7 +93,7 @@ pip install -e ".[dev,fetch]"
 bash scripts/fetch_data.sh                 # Banking77, pinned commit
 python scripts/fetch_models.py             # Hugging Face Hub; or --source dockerhub (what was used here)
 pytest -q                                  # hermetic tests with a tiny random Qwen2 model
-bash scripts/run_all.sh                    # every experiment; resumable; ~10 h on 4 vCPUs
+bash scripts/run_all.sh                    # every experiment; resumable; ~12 h on 4 vCPUs
 python -m ftvr.run report                  # regenerates results/RESULTS.md from results/metrics/*.json
 ```
 
@@ -114,7 +122,7 @@ repo were all measured on CPU.
   (see the confidence intervals).
 - CPU latencies are for a 4-vCPU Xeon with AMX; absolute numbers will differ on other hardware, ratios less so.
 - The serving-cost column is measured throughput times an assumed hourly price, not a billed cost.
-- No hyperparameter search was run for LoRA (lr 2e-4, 1 epoch, batch 16 throughout, except the ablations).
+- No hyperparameter search was run for LoRA (lr 2e-4, 1 epoch, batch 16, except where an ablation changes one of them). The ablations in section 4 of RESULTS.md are reported on the test split, so treat the best ablation numbers as optimistic; the main rows used fixed defaults.
 - Banking77 messages are short, English and single-intent; real support traffic is messier.
 
 ## Data and model licences

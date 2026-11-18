@@ -236,15 +236,21 @@ def build(res: Path) -> str:
             "| Approach | Acc. new intents | Acc. seen intents | Acc. all | Retraining needed |",
             "|---|---|---|---|---|",
         ]
+        names = {
+            "lora-r16-drop10": "LoRA trained on the 67 known intents only",
+            "raft-r16-drop10": "RAFT-style LoRA trained on the 67 known intents (30 each), new intents' examples added to the index",
+            "LoRA retrained on all 77 intents (upper bound)": "LoRA trained on all 77 intents (reference)",
+        }
         for r in ni["rows"]:
             L.append(
-                f"| {r['approach']} | {pct(r['acc_new_intents'])} | {pct(r['acc_seen_intents'])} | {pct(r['acc_all'])} | {r['retraining']} |"
+                f"| {names.get(r['approach'], r['approach'])} | {pct(r['acc_new_intents'])} | {pct(r['acc_seen_intents'])} | {pct(r['acc_all'])} | {r['retraining']} |"
             )
         L.append("")
 
     envs = {json.dumps(m.get("env"), sort_keys=True) for m in M.values() if m.get("env")}
     if envs:
-        L += ["## Environment", "", *[f"- `{e}`" for e in sorted(envs)], ""]
+        hw = "Intel Xeon with AMX bf16, 4 vCPUs, 15 GB RAM, shared cloud VM; wall-clock times vary by roughly 30% between runs."
+        L += ["## Environment", "", hw, "", *[f"- `{e}`" for e in sorted(envs)], ""]
     text = "\n".join(L)
     (res / "RESULTS.md").write_text(text)
     print(text)
