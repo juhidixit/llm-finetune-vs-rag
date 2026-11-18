@@ -1,0 +1,20 @@
+{
+  "n": 3080,
+  "accuracy": 0.8883116883116883,
+  "accuracy_ci95": [
+    0.8775974025974026,
+    0.8993587662337662
+  ],
+  "macro_f1": 0.8886261447002322,
+  "invalid_rate": 0.0,
+  "method": "TF-IDF + logistic regression",
+  "train_seconds": 16.042984583999953,
+  "throughput_ms_per_example": 0.012011766558440617,
+  "name": "tfidf-lr-test",
+  "env": {
+    "python": "3.13.18",
+    "torch": "2.15.0+cu132",
+    "cpu": "x86_64",
+    "threads": 4
+  }
+}

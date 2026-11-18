@@ -1,0 +1,26 @@
+{
+  "n": 1003,
+  "accuracy": 0.8015952143569293,
+  "accuracy_ci95": [
+    0.7766699900299102,
+    0.8255234297108675
+  ],
+  "macro_f1": 0.8059531876911571,
+  "invalid_rate": 0.0,
+  "ece": 0.1255273174787922,
+  "acc_at_80pct_coverage": 0.8877805486284289,
+  "throughput_ms_per_example": 340.1754513988039,
+  "prompt_tokens_mean": 287.99700897308077,
+  "method": "retrieval-augmented few-shot (MiniLM top-10 labelled examples)",
+  "k": 10,
+  "constrain_to": "all",
+  "candidates_in_prompt": true,
+  "label_recall_at_k": 0.9790628115653041,
+  "name": "rag-k10-all-val",
+  "env": {
+    "python": "3.13.18",
+    "torch": "2.15.0+cu132",
+    "cpu": "x86_64",
+    "threads": 4
+  }
+}

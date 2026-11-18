@@ -1,0 +1,35 @@
+[project]
+name = "ftvr"
+version = "0.1.0"
+description = "Fine-tune vs RAG vs prompting vs classic baselines for intent classification, measured on CPU"
+requires-python = ">=3.10"
+license = "MIT"
+dependencies = [
+  "torch>=2.3",
+  "transformers>=4.51",
+  "peft>=0.14",
+  "accelerate>=1.0",
+  "bitsandbytes>=0.45",
+  "scikit-learn>=1.4",
+  "numpy",
+  "tokenizers",
+]
+
+[project.optional-dependencies]
+dev = ["pytest", "ruff==0.8.4"]
+fetch = ["huggingface_hub", "gguf"]
+
+[tool.setuptools]
+packages = ["ftvr"]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 140
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+ignore = ["E501", "B905"]

@@ -1,0 +1,20 @@
+{
+  "n": 3080,
+  "accuracy": 0.9288961038961039,
+  "accuracy_ci95": [
+    0.9194805194805195,
+    0.9376623376623376
+  ],
+  "macro_f1": 0.9288117314840917,
+  "invalid_rate": 0.0,
+  "method": "MiniLM embeddings + logistic regression",
+  "train_seconds": 37.08720262100002,
+  "throughput_ms_per_example": 4.152739420779231,
+  "name": "minilm-lr-test",
+  "env": {
+    "python": "3.13.18",
+    "torch": "2.15.0+cu132",
+    "cpu": "x86_64",
+    "threads": 4
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "n": 3080,
+  "accuracy": 0.913961038961039,
+  "accuracy_ci95": [
+    0.9045454545454545,
+    0.923051948051948
+  ],
+  "macro_f1": 0.9136313863646124,
+  "invalid_rate": 0.0,
+  "method": "MiniLM kNN vote (k=10)",
+  "name": "minilm-knn10-test",
+  "env": {
+    "python": "3.13.18",
+    "torch": "2.15.0+cu132",
+    "cpu": "x86_64",
+    "threads": 4
+  }
+}
